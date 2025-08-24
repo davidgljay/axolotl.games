@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Axolotl Cake Run</title>
+  <style>
+    html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background:#0ea5e9; }
+    .wrap { display:grid; place-items:center; height:100%; }
+    canvas { background: linear-gradient(#8dd8ff, #aee6ff 70%, #7cc96b 70%); box-shadow: 0 10px 30px rgba(0,0,0,.15); border-radius: 16px; image-rendering: crisp-edges; }
+    .hud { position: fixed; inset: 16px auto auto 16px; background: rgba(255,255,255,.85); padding: 10px 14px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+    .hud b { font-weight: 800 }
+    .hint { position: fixed; right:16px; top:16px; background: rgba(0,0,0,.6); color:#fff; padding:10px 12px; border-radius:10px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="game" width="960" height="540"></canvas>
+  </div>
+  <div class="hud">Score: <b id="score">0</b> &nbsp;|&nbsp; Best: <b id="best">0</b></div>
+  <div class="hint">Jump between platforms • Touching the red spike ground = instant death • Avoid 🌶️ • Grab 🍰 and rare golden 🍦 (10×)</div>
+
+  <script>
+  (function() {
+    const W = 960, H = 540;
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    // WORLD
+    const gravity = 2200;
+    const groundY = H - 90; // touching ground = death
+    const scrollSpeed = 260;
+
+    // SCORE
+    let score = 0, best = +localStorage.ax_best || 0;
+    const scoreEl = document.getElementById('score');
+    const bestEl = document.getElementById('best');
+    bestEl.textContent = best;
+
+    // PLAYER
+    const player = { x: 150, y: H*0.4, vy: 0, w: 96, h: 96, img: new Image(), animTime: 0 };
+    player.img.src = 'axolotl.png';
+
+    // INPUT – infinite mid-air jumps
+    const jumpImpulse = 760;
+    function jump(){ player.vy = -jumpImpulse; }
+    addEventListener('keydown', e=>{ if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); jump(); } });
+    addEventListener('mousedown', jump);
+    addEventListener('touchstart', e=>{ e.preventDefault(); jump(); }, {passive:false});
+
+    // PLATFORMS & ENTITIES
+    const platforms = []; // {x,y,w,h=16,vx}
+    const entities = [];  // items attached to platforms
+    const TYPE = { CAKE:'cake', PEPPER:'pepper', CONE:'cone' };
+
+    // Load images for items
+    const images = {
+      [TYPE.CAKE]: new Image(),
+      [TYPE.PEPPER]: new Image(),
+      [TYPE.CONE]: new Image()
+    };
+    images[TYPE.CAKE].src = 'cake.png';
+    images[TYPE.PEPPER].src = 'pepper.png';
+    images[TYPE.CONE].src = 'cone.png';
+
+    // Spawn cursor that "rides" with the world scroll so platforms keep coming forever
+    let spawnCursor = W + 300; // we keep this ~a bit ahead of the right edge
+
+    function makePlatform(x){
+      const w = 160 + Math.random()*220;   // 160–380
+      const y = H - (150 + Math.random()*140); // height band
+      const h = 16;
+      const plat = { x, y, w, h, vx: -scrollSpeed };
+      platforms.push(plat);
+
+      // ITEMS on this platform: 1–3 columns; sometimes stacked 2–3 high
+      const cols = 1 + Math.floor(Math.random()*3); // 1..3
+      for(let c=0;c<cols;c++){
+        const offset = 20 + Math.random()*(w-40);
+        const stack = 1 + (Math.random()<0.35? Math.floor(Math.random()*2)+1 : 0); // sometimes 2–3 tall
+        for(let s=0;s<stack;s++){
+          const typeRoll = Math.random();
+          let type = TYPE.CAKE;
+          if(typeRoll<0.18) type = TYPE.PEPPER;       // 18%
+          if(typeRoll>0.96) type = TYPE.CONE;          // 4% (half as many as before)
+          entities.push({ type, parent: plat, ox: offset, oy: -26 - s*30, w: 40, h: 40 });
+        }
+      }
+    }
+
+    // HELPERS
+    function aabb(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y; }
+    function worldX(e){ return e.parent ? e.parent.x + e.ox : e.x; }
+    function worldY(e){ return e.parent ? e.parent.y + e.oy : e.y; }
+
+    // DRAW
+    function drawGround(){
+      // Draw a bed of continuous red spikes to clearly signal danger
+      ctx.fillStyle = '#8b1a1a';
+      ctx.fillRect(0, groundY+18, W, H-(groundY+18)); // darker base under spikes
+      // spike strip
+      const spikeH = 40, spikeW = 22;
+      for(let x=0; x<W+spikeW; x+=spikeW){
+        ctx.fillStyle = '#d00';
+        ctx.beginPath();
+        ctx.moveTo(x, groundY+18);
+        ctx.lineTo(x+spikeW/2, groundY+18 - spikeH);
+        ctx.lineTo(x+spikeW, groundY+18);
+        ctx.closePath();
+        ctx.fill();
+        // subtle highlight
+        ctx.fillStyle = '#f55';
+        ctx.beginPath();
+        ctx.moveTo(x+spikeW/2, groundY+18 - spikeH + 6);
+        ctx.lineTo(x+spikeW*0.75, groundY+18 - spikeH/2);
+        ctx.lineTo(x+spikeW/2, groundY+18 - spikeH + 6);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    function drawPlayer(dt){
+      player.animTime+=dt; const bob=Math.sin(player.animTime*10)*4;
+      const px=player.x-player.w/2, py=player.y-player.h/2+bob;
+      if (player.img.complete && player.img.naturalWidth) ctx.drawImage(player.img, px, py, player.w, player.h);
+      else { ctx.fillStyle='#f8b4c0'; ctx.beginPath(); ctx.ellipse(player.x, player.y, player.w/2, player.h/2,0,0,Math.PI*2); ctx.fill(); }
+    }
+
+    function drawPlatform(p){
+      // earthy platform with grass top
+      ctx.fillStyle = '#3a5f2f'; ctx.fillRect(p.x, p.y, p.w, p.h); // dirt beam
+      ctx.fillStyle='#6fb657'; ctx.fillRect(p.x, p.y-8, p.w, 8);   // grass lip
+    }
+
+    function drawEntity(e){
+      const x = worldX(e), y = worldY(e);
+      const img = images[e.type];
+      if(img && img.complete && img.naturalWidth){
+        ctx.drawImage(img, x - e.w/2, y - e.h/2, e.w, e.h);
+      } else {
+        // fallback: simple shape
+        ctx.fillStyle = (e.type===TYPE.CAKE?'#c98': e.type===TYPE.PEPPER?'#e11':'#f6c90e');
+        ctx.fillRect(x-e.w/2,y-e.h/2,e.w,e.h);
+      }
+    }
+
+    // RESET
+    function resetGame(){
+      score = 0; scoreEl.textContent = 0;
+      entities.length = 0; platforms.length = 0;
+      player.x = 150; player.y = H*0.4; player.vy = 0;
+
+      // re-seed spawn cursor just off-screen right and create a few starter platforms
+      spawnCursor = W + 300;
+      for(let i=0;i<3;i++){
+        makePlatform(spawnCursor);
+        spawnCursor += 140 + Math.random()*120; // small initial gaps
+      }
+    }
+
+    // LOOP
+    let last = performance.now();
+    function loop(now){
+      const dt = (now-last)/1000; last = now;
+
+      // physics
+      player.vy += gravity*dt; player.y += player.vy*dt;
+
+      // touching ground = death (instant reset)
+      if (player.y > groundY - player.h/2) { resetGame(); requestAnimationFrame(loop); return; }
+
+      // move platforms left & cull
+      for(let i=platforms.length-1;i>=0;i--){
+        const p = platforms[i]; p.x += p.vx*dt; if (p.x + p.w < -120) platforms.splice(i,1);
+      }
+
+      // advance the spawn cursor with the scroll and keep spawning while it's near the right edge
+      spawnCursor -= scrollSpeed * dt;
+      while (spawnCursor < W + 300) {
+        makePlatform(W + 300); // create just beyond right edge
+        spawnCursor += 120 + Math.random()*180; // next gap distance
+      }
+
+      // one-way landing on platform tops
+      const feet = { x: player.x-18, y: player.y+player.h/2-4, w: 36, h: 8 };
+      for(const p of platforms){
+        const topBox = { x:p.x, y:p.y-8, w:p.w, h:12 };
+        if (player.vy > 0 && aabb(feet, topBox)) { player.y = p.y - player.h/2; player.vy = 0; break; }
+      }
+
+      // update items & collisions
+      for (let i=entities.length-1;i>=0;i--){
+        const e = entities[i];
+        if (e.parent && e.parent.x + e.parent.w < -120) { entities.splice(i,1); continue; }
+        const ex = worldX(e), ey = worldY(e);
+        const eBox = { x: ex - e.w/2, y: ey - e.h/2, w: e.w, h: e.h };
+        const hitbox = { x: player.x - 28, y: player.y - 28, w: 56, h: 56 };
+        if (aabb(hitbox, eBox)){
+          if (e.type===TYPE.PEPPER) { score = Math.max(0, score - 25); entities.splice(i,1); }
+          else if (e.type===TYPE.CONE) { score += 100; entities.splice(i,1); }
+          else if (e.type===TYPE.CAKE) { score += 10; entities.splice(i,1); }
+        }
+      }
+
+      // draw
+      ctx.clearRect(0,0,W,H);
+      drawGround();
+      for(const p of platforms) drawPlatform(p);
+      for(const e of entities) drawEntity(e);
+      drawPlayer(dt);
+
+      // score trickle & best
+      score += dt*2; scoreEl.textContent = Math.floor(score);
+      if (score > best) { best = Math.floor(score); localStorage.ax_best = best; bestEl.textContent = best; }
+
+      requestAnimationFrame(loop);
+    }
+
+    // Start the game cleanly
+    resetGame();
+    requestAnimationFrame(loop);
+  })();
+  </script>
+</body>
+</html>
