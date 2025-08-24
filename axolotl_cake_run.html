@@ -41,7 +41,7 @@
     const player = { x: 150, y: H*0.4, vy: 0, w: 96, h: 96, img: new Image(), animTime: 0 };
     player.img.src = 'axolotl.png';
 
-    // INPUT – infinite mid-air jumps
+    // INPUT – infinite mid‑air jumps
     const jumpImpulse = 760;
     function jump(){ player.vy = -jumpImpulse; }
     addEventListener('keydown', e=>{ if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); jump(); } });
@@ -82,10 +82,11 @@
           const typeRoll = Math.random();
           let type = TYPE.CAKE;
           if(typeRoll<0.18) type = TYPE.PEPPER;       // 18%
-          if(typeRoll>0.96) type = TYPE.CONE;          // 4% (half as many as before)
+          if(typeRoll>0.96) type = TYPE.CONE;          // 4% (rare)
           entities.push({ type, parent: plat, ox: offset, oy: -26 - s*30, w: 40, h: 40 });
         }
       }
+      return plat;
     }
 
     // HELPERS
@@ -98,7 +99,6 @@
       // Draw a bed of continuous red spikes to clearly signal danger
       ctx.fillStyle = '#8b1a1a';
       ctx.fillRect(0, groundY+18, W, H-(groundY+18)); // darker base under spikes
-      // spike strip
       const spikeH = 40, spikeW = 22;
       for(let x=0; x<W+spikeW; x+=spikeW){
         ctx.fillStyle = '#d00';
@@ -106,16 +106,13 @@
         ctx.moveTo(x, groundY+18);
         ctx.lineTo(x+spikeW/2, groundY+18 - spikeH);
         ctx.lineTo(x+spikeW, groundY+18);
-        ctx.closePath();
-        ctx.fill();
-        // subtle highlight
+        ctx.closePath(); ctx.fill();
         ctx.fillStyle = '#f55';
         ctx.beginPath();
         ctx.moveTo(x+spikeW/2, groundY+18 - spikeH + 6);
         ctx.lineTo(x+spikeW*0.75, groundY+18 - spikeH/2);
         ctx.lineTo(x+spikeW/2, groundY+18 - spikeH + 6);
-        ctx.closePath();
-        ctx.fill();
+        ctx.closePath(); ctx.fill();
       }
     }
 
@@ -138,24 +135,32 @@
       if(img && img.complete && img.naturalWidth){
         ctx.drawImage(img, x - e.w/2, y - e.h/2, e.w, e.h);
       } else {
-        // fallback: simple shape
         ctx.fillStyle = (e.type===TYPE.CAKE?'#c98': e.type===TYPE.PEPPER?'#e11':'#f6c90e');
         ctx.fillRect(x-e.w/2,y-e.h/2,e.w,e.h);
       }
     }
 
-    // RESET
+    // RESET — seed on‑screen platforms so you can play immediately
     function resetGame(){
       score = 0; scoreEl.textContent = 0;
       entities.length = 0; platforms.length = 0;
-      player.x = 150; player.y = H*0.4; player.vy = 0;
+      player.x = 150; player.vy = 0;
 
-      // re-seed spawn cursor just off-screen right and create a few starter platforms
-      spawnCursor = W + 300;
-      for(let i=0;i<3;i++){
-        makePlatform(spawnCursor);
-        spawnCursor += 140 + Math.random()*120; // small initial gaps
+      // Build a staircase of platforms starting ON‑SCREEN
+      let x = 120; // start inside the viewport
+      const rows = 4 + Math.floor(Math.random()*2); // 4–5 starter platforms
+      let firstPlat = null, lastPlat = null;
+      for(let i=0;i<rows;i++){
+        const p = makePlatform(x);
+        if (!firstPlat) firstPlat = p;
+        lastPlat = p;
+        x += 160 + Math.random()*200;
       }
+      // Place the player safely on the first platform
+      player.y = firstPlat.y - player.h/2 - 2;
+
+      // Now position the spawn cursor just beyond the last starter platform
+      spawnCursor = lastPlat.x + lastPlat.w + 140;
     }
 
     // LOOP
@@ -177,8 +182,8 @@
       // advance the spawn cursor with the scroll and keep spawning while it's near the right edge
       spawnCursor -= scrollSpeed * dt;
       while (spawnCursor < W + 300) {
-        makePlatform(W + 300); // create just beyond right edge
-        spawnCursor += 120 + Math.random()*180; // next gap distance
+        const p = makePlatform(W + 300); // create just beyond right edge
+        spawnCursor = p.x + p.w + (120 + Math.random()*180); // next gap after the new platform
       }
 
       // one-way landing on platform tops
@@ -196,7 +201,7 @@
         const eBox = { x: ex - e.w/2, y: ey - e.h/2, w: e.w, h: e.h };
         const hitbox = { x: player.x - 28, y: player.y - 28, w: 56, h: 56 };
         if (aabb(hitbox, eBox)){
-          if (e.type===TYPE.PEPPER) { score = Math.max(0, score - 25); entities.splice(i,1); }
+          if (e.type===TYPE.PEPPER) { score = Math.max(0, score - 50); entities.splice(i,1); }
           else if (e.type===TYPE.CONE) { score += 100; entities.splice(i,1); }
           else if (e.type===TYPE.CAKE) { score += 10; entities.splice(i,1); }
         }
@@ -216,7 +221,7 @@
       requestAnimationFrame(loop);
     }
 
-    // Start the game cleanly
+    // Start the game cleanly with visible platforms
     resetGame();
     requestAnimationFrame(loop);
   })();
