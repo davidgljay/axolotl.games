@@ -94,7 +94,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             <img
-              src="/img/game_preview.png"
+              src="/img/game_preview.jpg"
               alt="Axolotl Cake Run Preview"
               className="game-preview-img"
             />
