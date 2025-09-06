@@ -1,7 +1,11 @@
 
 import React from "react";
 
-const Home: React.FC = () => {
+interface HomeProps {
+  onNavigate: (view: 'cake-run' | 'character-creator') => void;
+}
+
+const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   return (
     <div>
       <style>{`
@@ -30,6 +34,14 @@ const Home: React.FC = () => {
             margin: 0;
             font-size: 1.5rem;
             font-weight: normal;
+        }
+        .game-menu-wrapper {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 2rem;
         }
         .game-link-wrapper {
             display: flex;
@@ -74,10 +86,12 @@ const Home: React.FC = () => {
             style={{ height: "120px", marginLeft: "2rem" }}
           />
         </div>
+        <div className="game-menu-wrapper">
         <div className="game-link-wrapper">
-          <a
-            href="axolotl_cake_run.html"
+          <button
+            onClick={() => onNavigate('cake-run')}
             className="game-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             <img
               src="/img/game_preview.png"
@@ -87,12 +101,13 @@ const Home: React.FC = () => {
             <div className="game-title">
               Play Axolotl Cake Run
             </div>
-          </a>
+          </button>
         </div>
         <div className="game-link-wrapper">
-          <a
-            href="axolotl_character_creator.html"
+          <button
+            onClick={() => onNavigate('character-creator')}
             className="game-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             <img
               src="/img/character_creator_preview.png"
@@ -102,7 +117,8 @@ const Home: React.FC = () => {
             <div className="game-title">
               Axolotl Character Creator
             </div>
-          </a>
+          </button>
+        </div>
         </div>
       </div>
     </div>

@@ -1,12 +1,5 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 import { RotateCcw, Shuffle, Download, Crown } from "lucide-react";
 
 const CLASSES = [
@@ -21,7 +14,19 @@ const CLASSES = [
 const TAIL_STYLES = ["short", "flowy", "spiky", "frilled"];
 const GILL_STYLES = ["petite", "bushy", "ribbon", "royal"];
 
-const DEFAULT_STATE = {
+interface AxolotlState {
+  name: string;
+  clazz: string;
+  isPrincess: boolean;
+  bodyColor: string;
+  bellyColor: string;
+  gillColor: string;
+  tailStyle: string;
+  gillStyle: string;
+  notes: string;
+}
+
+const DEFAULT_STATE: AxolotlState = {
   name: "Mima",
   clazz: "witch",
   isPrincess: false,
@@ -33,7 +38,7 @@ const DEFAULT_STATE = {
   notes: ""
 };
 
-function AxolotlPreview({ state }) {
+function AxolotlPreview({ state }: { state: AxolotlState }) {
   return (
     <div className="w-full h-full flex items-center justify-center p-4">
       <motion.div className="relative" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
@@ -122,21 +127,31 @@ function AxolotlPreview({ state }) {
   );
 }
 
-function ColorInput({ id, label, value, onChange }) {
+function ColorInput({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (value: string) => void }) {
   return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-3">
-      <div className="space-y-1">
-        <Label htmlFor={id}>{label}</Label>
-        <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} />
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.75rem' }}>
+      <div className="character-creator-form-group" style={{ margin: 0 }}>
+        <label htmlFor={id} className="character-creator-label">{label}</label>
+        <input 
+          id={id} 
+          value={value} 
+          onChange={(e) => onChange(e.target.value)}
+          className="character-creator-input"
+        />
       </div>
-      <input aria-label={label} type="color" className="h-10 w-12 rounded-md border" value={value} onChange={(e) => onChange(e.target.value)} />
+      <input aria-label={label} type="color" style={{ height: '2.5rem', width: '3rem', borderRadius: '0.375rem', border: '1px solid #d1d5db' }} value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }
 
-export default function AxolotlCharacterCreator() {
-  const [state, setState] = useState(DEFAULT_STATE);
-  const set = (key, val) => setState((s) => ({ ...s, [key]: val }));
+interface AxolotlCharacterCreatorProps {
+  onBack: () => void;
+}
+
+export default function AxolotlCharacterCreator({ onBack }: AxolotlCharacterCreatorProps) {
+  const [state, setState] = useState<AxolotlState>(DEFAULT_STATE);
+  const [activeTab, setActiveTab] = useState('class');
+  const set = (key: keyof AxolotlState, val: any) => setState((s) => ({ ...s, [key]: val }));
 
   const handleDownload = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -152,110 +167,323 @@ export default function AxolotlCharacterCreator() {
   const handleRandom = () => setState({ ...DEFAULT_STATE, clazz: CLASSES[Math.floor(Math.random() * CLASSES.length)].id });
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-slate-50 to-white py-6 md:py-10">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Axolotl Character Creator</h1>
+    <div>
+      <style>{`
+        .character-creator-container {
+          min-height: 100vh;
+          width: 100%;
+          background: linear-gradient(to bottom, #f8fafc, #ffffff);
+          padding: 1.5rem 0;
+        }
+        .character-creator-content {
+          margin: 0 auto;
+          max-width: 72rem;
+          padding: 0 1rem;
+        }
+        .character-creator-header {
+          margin-bottom: 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+        }
+        .character-creator-title {
+          font-size: 1.875rem;
+          font-weight: 700;
+          letter-spacing: -0.025em;
+        }
+        .character-creator-buttons {
+          display: flex;
+          gap: 0.5rem;
+        }
+        .character-creator-button {
+          padding: 0.5rem 1rem;
+          border: 1px solid #d1d5db;
+          border-radius: 0.375rem;
+          background: white;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: background-color 0.2s;
+        }
+        .character-creator-button:hover {
+          background-color: #f9fafb;
+        }
+        .character-creator-button.primary {
+          background-color: #2563eb;
+          color: white;
+          border-color: #2563eb;
+        }
+        .character-creator-button.primary:hover {
+          background-color: #1d4ed8;
+        }
+        .character-creator-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+        @media (min-width: 1024px) {
+          .character-creator-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+        .character-creator-card {
+          background-color: white;
+          border-radius: 0.5rem;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+          padding: 1.5rem;
+        }
+        .character-creator-card-title {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+        }
+        .character-creator-tabs {
+          display: flex;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+        }
+        .character-creator-tab {
+          padding: 0.5rem 1rem;
+          border: 1px solid #d1d5db;
+          border-radius: 0.375rem;
+          background: white;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        .character-creator-tab:hover {
+          background-color: #f9fafb;
+        }
+        .character-creator-tab.active {
+          background-color: #2563eb;
+          color: white;
+          border-color: #2563eb;
+        }
+        .character-creator-form-group {
+          margin-bottom: 1rem;
+        }
+        .character-creator-label {
+          display: block;
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: #374151;
+          margin-bottom: 0.25rem;
+        }
+        .character-creator-input {
+          width: 100%;
+          padding: 0.5rem 0.75rem;
+          border: 1px solid #d1d5db;
+          border-radius: 0.375rem;
+          font-size: 0.875rem;
+        }
+        .character-creator-input:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .character-creator-class-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+        .character-creator-class-button {
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
+          cursor: pointer;
+          border: 1px solid #d1d5db;
+          background: white;
+        }
+        .character-creator-class-button.active {
+          background-color: #2563eb;
+          color: white;
+          border-color: #2563eb;
+        }
+        .character-creator-checkbox-group {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding-top: 0.5rem;
+        }
+        .character-creator-preview {
+          height: 420px;
+        }
+        .character-creator-preview-info {
+          margin-top: 0.5rem;
+          font-size: 0.75rem;
+          color: #6b7280;
+        }
+      `}</style>
+      
+      <div className="character-creator-container">
+        <div className="character-creator-content">
+          <div className="character-creator-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button 
+                onClick={onBack}
+                className="character-creator-button"
+              >
+                ← Back to Home
+              </button>
+              <h1 className="character-creator-title">Axolotl Character Creator</h1>
+            </div>
+            <div className="character-creator-buttons">
+              <button 
+                className="character-creator-button"
+                onClick={handleReset}
+              >
+                <RotateCcw style={{ height: '1rem', width: '1rem' }} />
+                Reset
+              </button>
+              <button 
+                className="character-creator-button"
+                onClick={handleRandom}
+              >
+                <Shuffle style={{ height: '1rem', width: '1rem' }} />
+                Random
+              </button>
+              <button 
+                className="character-creator-button primary"
+                onClick={handleDownload}
+              >
+                <Download style={{ height: '1rem', width: '1rem' }} />
+                Export JSON
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleReset}>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Reset
-            </Button>
-            <Button variant="outline" onClick={handleRandom}>
-              <Shuffle className="mr-2 h-4 w-4" />
-              Random
-            </Button>
-            <Button onClick={handleDownload}>
-              <Download className="mr-2 h-4 w-4" />
-              Export JSON
-            </Button>
+
+          <div className="character-creator-grid">
+            <div className="character-creator-card">
+              <h2 className="character-creator-card-title">Creator</h2>
+              
+              <div style={{ width: '100%' }}>
+                <div className="character-creator-tabs">
+                  <button 
+                    className={`character-creator-tab ${activeTab === 'class' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('class')}
+                  >
+                    Class
+                  </button>
+                  <button 
+                    className={`character-creator-tab ${activeTab === 'appearance' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('appearance')}
+                  >
+                    Appearance
+                  </button>
+                  <button 
+                    className={`character-creator-tab ${activeTab === 'bio' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('bio')}
+                  >
+                    Identity
+                  </button>
+                </div>
+
+                {activeTab === 'class' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className="character-creator-form-group">
+                      <label htmlFor="name" className="character-creator-label">Name</label>
+                      <input 
+                        id="name" 
+                        value={state.name} 
+                        onChange={(e) => set("name", e.target.value)}
+                        className="character-creator-input"
+                      />
+                    </div>
+
+                    <div className="character-creator-class-buttons">
+                      {CLASSES.map((c) => (
+                        <button 
+                          key={c.id} 
+                          className={`character-creator-class-button ${
+                            state.clazz === c.id ? 'active' : ''
+                          }`}
+                          onClick={() => set("clazz", c.id)}
+                        >
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="character-creator-checkbox-group">
+                      <input 
+                        id="princess" 
+                        type="checkbox" 
+                        checked={state.isPrincess} 
+                        onChange={(e) => set("isPrincess", e.target.checked)}
+                        style={{ height: '1rem', width: '1rem' }}
+                      />
+                      <label htmlFor="princess" className="character-creator-label" style={{ margin: 0 }}>This axolotl is a princess</label>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'appearance' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <ColorInput id="bodyColor" label="Body Color" value={state.bodyColor} onChange={(v) => set("bodyColor", v)} />
+                    <ColorInput id="bellyColor" label="Belly Color" value={state.bellyColor} onChange={(v) => set("bellyColor", v)} />
+                    <ColorInput id="gillColor" label="Gill Color" value={state.gillColor} onChange={(v) => set("gillColor", v)} />
+                    <div className="character-creator-form-group">
+                      <label className="character-creator-label">Tail Style</label>
+                      <select 
+                        value={state.tailStyle} 
+                        onChange={(e) => set("tailStyle", e.target.value)}
+                        className="character-creator-input"
+                      >
+                        {TAIL_STYLES.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="character-creator-form-group">
+                      <label className="character-creator-label">Gill Style</label>
+                      <select 
+                        value={state.gillStyle} 
+                        onChange={(e) => set("gillStyle", e.target.value)}
+                        className="character-creator-input"
+                      >
+                        {GILL_STYLES.map((g) => (
+                          <option key={g} value={g}>
+                            {g}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'bio' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className="character-creator-form-group">
+                      <label htmlFor="notes" className="character-creator-label">Backstory Notes</label>
+                      <textarea 
+                        id="notes" 
+                        value={state.notes} 
+                        onChange={(e) => set("notes", e.target.value)}
+                        className="character-creator-input"
+                        style={{ height: '8rem', resize: 'vertical' }}
+                      />
+                    </div>
+                  </div>
+                )}
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <Card className="lg:col-span-3">
-            <CardHeader>
-              <CardTitle>Creator</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="class" className="w-full">
-                <TabsList className="grid grid-cols-3">
-                  <TabsTrigger value="class">Class</TabsTrigger>
-                  <TabsTrigger value="appearance">Appearance</TabsTrigger>
-                  <TabsTrigger value="bio">Identity</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="class" className="mt-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" value={state.name} onChange={(e) => set("name", e.target.value)} />
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {CLASSES.map((c) => (
-                      <Button key={c.id} variant={state.clazz === c.id ? "default" : "outline"} onClick={() => set("clazz", c.id)}>
-                        {c.label}
-                      </Button>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-3 pt-2">
-                    <Checkbox id="princess" checked={state.isPrincess} onCheckedChange={(v) => set("isPrincess", Boolean(v))} />
-                    <Label htmlFor="princess">This axolotl is a princess</Label>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="appearance" className="mt-4 space-y-6">
-                  <ColorInput id="bodyColor" label="Body Color" value={state.bodyColor} onChange={(v) => set("bodyColor", v)} />
-                  <ColorInput id="bellyColor" label="Belly Color" value={state.bellyColor} onChange={(v) => set("bellyColor", v)} />
-                  <ColorInput id="gillColor" label="Gill Color" value={state.gillColor} onChange={(v) => set("gillColor", v)} />
-                  <div className="space-y-2">
-                    <Label>Tail Style</Label>
-                    <select value={state.tailStyle} onChange={(e) => set("tailStyle", e.target.value)}>
-                      {TAIL_STYLES.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Gill Style</Label>
-                    <select value={state.gillStyle} onChange={(e) => set("gillStyle", e.target.value)}>
-                      {GILL_STYLES.map((g) => (
-                        <option key={g} value={g}>
-                          {g}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="bio" className="mt-4 space-y-4">
-                  <Label htmlFor="notes">Backstory Notes</Label>
-                  <Textarea id="notes" value={state.notes} onChange={(e) => set("notes", e.target.value)} />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>
-                Preview {state.isPrincess && <Crown className="inline ml-2 h-4 w-4" />}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="h-[420px]">
-              <AxolotlPreview state={state} />
-              <div className="mt-2 text-xs text-muted-foreground">
-                <strong>Class:</strong> {state.clazz} • <strong>Name:</strong> {state.name || "—"}
+            <div className="character-creator-card">
+              <h2 className="character-creator-card-title" style={{ display: 'flex', alignItems: 'center' }}>
+                Preview {state.isPrincess && <Crown style={{ marginLeft: '0.5rem', height: '1rem', width: '1rem' }} />}
+              </h2>
+              <div className="character-creator-preview">
+                <AxolotlPreview state={state} />
+                <div className="character-creator-preview-info">
+                  <strong>Class:</strong> {state.clazz} • <strong>Name:</strong> {state.name || "—"}
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
