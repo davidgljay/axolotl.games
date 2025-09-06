@@ -18,22 +18,10 @@ const CLASSES = [
   { id: "witch", label: "🧙 Witch" }
 ];
 
-const TAIL_STYLES = ["short", "flowy", "spiky", "frilled"] as const;
-const GILL_STYLES = ["petite", "bushy", "ribbon", "royal"] as const;
+const TAIL_STYLES = ["short", "flowy", "spiky", "frilled"];
+const GILL_STYLES = ["petite", "bushy", "ribbon", "royal"];
 
-type AxoState = {
-  name: string;
-  clazz: string;
-  isPrincess: boolean;
-  bodyColor: string;
-  bellyColor: string;
-  gillColor: string;
-  tailStyle: typeof TAIL_STYLES[number];
-  gillStyle: typeof GILL_STYLES[number];
-  notes: string;
-};
-
-const DEFAULT_STATE: AxoState = {
+const DEFAULT_STATE = {
   name: "Mima",
   clazz: "witch",
   isPrincess: false,
@@ -45,7 +33,7 @@ const DEFAULT_STATE: AxoState = {
   notes: ""
 };
 
-function AxolotlPreview({ state }: { state: AxoState }) {
+function AxolotlPreview({ state }) {
   return (
     <div className="w-full h-full flex items-center justify-center p-4">
       <motion.div className="relative" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
@@ -134,7 +122,7 @@ function AxolotlPreview({ state }: { state: AxoState }) {
   );
 }
 
-function ColorInput({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (val: string) => void }) {
+function ColorInput({ id, label, value, onChange }) {
   return (
     <div className="grid grid-cols-[1fr_auto] items-center gap-3">
       <div className="space-y-1">
@@ -147,8 +135,8 @@ function ColorInput({ id, label, value, onChange }: { id: string; label: string;
 }
 
 export default function AxolotlCharacterCreator() {
-  const [state, setState] = useState<AxoState>(DEFAULT_STATE);
-  const set = <K extends keyof AxoState>(key: K, val: AxoState[K]) => setState((s) => ({ ...s, [key]: val }));
+  const [state, setState] = useState(DEFAULT_STATE);
+  const set = (key, val) => setState((s) => ({ ...s, [key]: val }));
 
   const handleDownload = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -225,7 +213,7 @@ export default function AxolotlCharacterCreator() {
                   <ColorInput id="gillColor" label="Gill Color" value={state.gillColor} onChange={(v) => set("gillColor", v)} />
                   <div className="space-y-2">
                     <Label>Tail Style</Label>
-                    <select value={state.tailStyle} onChange={(e) => set("tailStyle", e.target.value as any)}>
+                    <select value={state.tailStyle} onChange={(e) => set("tailStyle", e.target.value)}>
                       {TAIL_STYLES.map((t) => (
                         <option key={t} value={t}>
                           {t}
@@ -235,7 +223,7 @@ export default function AxolotlCharacterCreator() {
                   </div>
                   <div className="space-y-2">
                     <Label>Gill Style</Label>
-                    <select value={state.gillStyle} onChange={(e) => set("gillStyle", e.target.value as any)}>
+                    <select value={state.gillStyle} onChange={(e) => set("gillStyle", e.target.value)}>
                       {GILL_STYLES.map((g) => (
                         <option key={g} value={g}>
                           {g}

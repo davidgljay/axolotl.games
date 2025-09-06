@@ -39,7 +39,7 @@
 
     // PLAYER
     const player = { x: 150, y: H*0.4, vy: 0, w: 96, h: 96, img: new Image(), animTime: 0 };
-    player.img.src = 'img/axolotl.png';
+    player.img.src = '/img/axolotl.png';
 
     // INPUT – infinite mid‑air jumps
     const jumpImpulse = 760;
@@ -59,9 +59,9 @@
       [TYPE.PEPPER]: new Image(),
       [TYPE.CONE]: new Image()
     };
-    images[TYPE.CAKE].src = 'img/cake.png';
-    images[TYPE.PEPPER].src = 'img/pepper.png';
-    images[TYPE.CONE].src = 'img/cone.png';
+    images[TYPE.CAKE].src = '/img/cake.png';
+    images[TYPE.PEPPER].src = '/img/pepper.png';
+    images[TYPE.CONE].src = '/img/cone.png';
 
     // Spawn cursor that "rides" with the world scroll so platforms keep coming forever
     let spawnCursor = W + 300; // we keep this ~a bit ahead of the right edge
