@@ -2,7 +2,7 @@
 import React from "react";
 
 interface HomeProps {
-  onNavigate: (view: 'cake-run' | 'character-creator') => void;
+  onNavigate: (view: 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr') => void;
 }
 
 const Home: React.FC<HomeProps> = ({ onNavigate }) => {
@@ -42,6 +42,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             justify-content: center;
             margin-top: 2rem;
             gap: 2rem;
+            flex-wrap: wrap;
         }
         .game-link-wrapper {
             display: flex;
@@ -116,6 +117,38 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             />
             <div className="game-title">
               Axolotl Character Creator
+            </div>
+          </button>
+        </div>
+        <div className="game-link-wrapper">
+          <button
+            onClick={() => onNavigate('axolotl-driving-game')}
+            className="game-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <img
+              src="/img/axolotl_driving.png"
+              alt="Axolotl Driving Game Preview"
+              className="game-preview-img"
+            />
+            <div className="game-title">
+              Axolotl Driving Game
+            </div>
+          </button>
+        </div>
+        <div className="game-link-wrapper">
+          <button
+            onClick={() => onNavigate('axolotl-clickr')}
+            className="game-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <img
+              src="/img/axolotl_clicker.png"
+              alt="Axolotl Clickr Preview"
+              className="game-preview-img"
+            />
+            <div className="game-title">
+              Axolotl Clickr
             </div>
           </button>
         </div>
