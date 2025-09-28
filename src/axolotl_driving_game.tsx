@@ -17,7 +17,7 @@ import React, { useEffect, useRef, useState } from "react";
 // Sprite: place an optional 'axolotlcar.png' next to your built assets. If missing,
 // a placeholder car + axolotl face is drawn.
 
-export default function AxolotlDriver() {
+export default function AxolotlDriver({ onBack }: { onBack: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // UI state
@@ -498,6 +498,12 @@ export default function AxolotlDriver() {
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-semibold">Axolotl Driver</h1>
           <div className="flex gap-2">
+            <button
+              onClick={onBack}
+              className="px-3 py-1.5 rounded-2xl bg-gray-500 hover:bg-gray-600 text-white shadow"
+            >
+              Back to Home
+            </button>
             {!running ? (
               <button
                 onClick={() => {
