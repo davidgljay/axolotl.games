@@ -2,7 +2,7 @@
 import React from "react";
 
 interface HomeProps {
-  onNavigate: (view: 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr') => void;
+  onNavigate: (view: 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr' | 'axolotl-painter') => void;
 }
 
 const Home: React.FC<HomeProps> = ({ onNavigate }) => {
@@ -149,6 +149,22 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             />
             <div className="game-title">
               Axolotl Clickr
+            </div>
+          </button>
+        </div>
+        <div className="game-link-wrapper">
+          <button
+            onClick={() => onNavigate('axolotl-painter')}
+            className="game-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <img
+              src="/img/axolotl_painter.png"
+              alt="Axolotl Painter Preview"
+              className="game-preview-img"
+            />
+            <div className="game-title">
+              Axolotl Painter
             </div>
           </button>
         </div>
