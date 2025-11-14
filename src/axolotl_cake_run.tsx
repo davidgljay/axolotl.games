@@ -154,8 +154,7 @@ const AxolotlCakeRun: React.FC<AxolotlCakeRunProps> = ({ onBack }) => {
       console.log('Game reset triggered:', reason, {
         playerY: gameRef.current.player.y,
         playerVy: gameRef.current.player.vy,
-        platformsCount: gameRef.current.platforms.length,
-        score: Math.floor(score)
+        platformsCount: gameRef.current.platforms.length
       });
     }
     
@@ -293,7 +292,8 @@ const AxolotlCakeRun: React.FC<AxolotlCakeRunProps> = ({ onBack }) => {
     setScore(prev => {
       const newScore = prev + dt * 2;
       const floorScore = Math.floor(newScore);
-      if (floorScore > best) {
+      const currentBest = parseInt(localStorage.getItem('ax_best') || '0', 10);
+      if (floorScore > currentBest) {
         setBest(floorScore);
         localStorage.setItem('ax_best', floorScore.toString());
       }
@@ -301,11 +301,11 @@ const AxolotlCakeRun: React.FC<AxolotlCakeRunProps> = ({ onBack }) => {
     });
 
     gameRef.current.animationId = requestAnimationFrame(gameLoop);
-  }, [gravity, groundY, scrollSpeed, makePlatform, resetGame, drawGround, drawPlatform, drawEntity, drawPlayer, best]);
+  }, [gravity, groundY, scrollSpeed, makePlatform, resetGame, drawGround, drawPlatform, drawEntity, drawPlayer]);
 
   // Initialize game
   useEffect(() => {
-    console.log('AxolotlCakeRun component mounted/updated');
+    console.log('AxolotlCakeRun component mounted');
     
     // Prevent re-initialization if game is already running
     if (gameRef.current?.animationId) {
@@ -399,7 +399,8 @@ const AxolotlCakeRun: React.FC<AxolotlCakeRunProps> = ({ onBack }) => {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('touchstart', handleTouchStart);
     };
-  }, [resetGame, gameLoop, jump, H]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   return (
     <div>
