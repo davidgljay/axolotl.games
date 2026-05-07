@@ -2,7 +2,7 @@
 import React from "react";
 
 interface HomeProps {
-  onNavigate: (view: 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr' | 'axolotl-painter' | 'axolotl-baseball') => void;
+  onNavigate: (view: 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr' | 'axolotl-painter' | 'axolotl-baseball' | 'axolotl-disco') => void;
 }
 
 const Home: React.FC<HomeProps> = ({ onNavigate }) => {
@@ -228,6 +228,78 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             </svg>
             <div className="game-title">
               Axolotl Baseball
+            </div>
+          </button>
+        </div>
+        <div className="game-link-wrapper">
+          <button
+            onClick={() => onNavigate('axolotl-disco')}
+            className="game-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <svg
+              width="400"
+              height="300"
+              className="game-preview-img"
+              style={{ background: 'linear-gradient(180deg, #0d0620 0%, #1a0a2e 60%, #0d1a2e 100%)' }}
+            >
+              {/* Disco ball */}
+              <circle cx="200" cy="60" r="30" fill="#6b6b7a" stroke="#aaa" strokeWidth="1.5" />
+              {[0,1,2,3,4,5,6,7].map(col =>
+                [0,1,2,3,4].map(row => {
+                  const colors = ['#ff4455','#ff8800','#ffee00','#44ff88','#44aaff','#cc44ff'];
+                  const angle = (col / 8) * Math.PI * 2 + row * 0.2;
+                  const r = 22 - Math.abs(row - 2) * 3;
+                  const cx = 200 + Math.cos(angle) * r;
+                  const cy = 46 + row * 11 + Math.sin(angle) * 3;
+                  return (
+                    <rect
+                      key={`${col}-${row}`}
+                      x={cx - 3} y={cy - 3} width={5} height={5}
+                      rx={1}
+                      fill={colors[(col + row) % colors.length]}
+                      opacity={0.85}
+                    />
+                  );
+                })
+              )}
+              <line x1="200" y1="20" x2="200" y2="30" stroke="#aaa" strokeWidth="2" />
+              {/* Beat grid preview */}
+              {[0,1,2,3,4,5].map(row => {
+                const rowColors = ['#ff4455','#ff8800','#ffee00','#44ff88','#44aaff','#cc44ff'];
+                const activeCells = [[0,4,8,12],[4,12],[2,6,10,14],[],[4,12],[0,3,8,11]][row];
+                return [0,1,2,3,4,5,6,7].map(col => {
+                  const active = activeCells.includes(col * 2);
+                  return (
+                    <rect
+                      key={`${row}-${col}`}
+                      x={60 + col * 37}
+                      y={130 + row * 22}
+                      width={32}
+                      height={17}
+                      rx={3}
+                      fill={active ? rowColors[row] : 'rgba(255,255,255,0.07)'}
+                      opacity={active ? 0.9 : 1}
+                      style={active ? { filter: `drop-shadow(0 0 4px ${rowColors[row]})` } : undefined}
+                    />
+                  );
+                });
+              })}
+              {/* Axolotl silhouette */}
+              <ellipse cx="155" cy="265" rx="22" ry="16" fill="#ff69b4" opacity="0.8" />
+              <circle cx="147" cy="258" r="3" fill="#111" />
+              <circle cx="163" cy="258" r="3" fill="#111" />
+              <ellipse cx="245" cy="268" rx="22" ry="16" fill="#ff69b4" opacity="0.8" />
+              <circle cx="237" cy="261" r="3" fill="#111" />
+              <circle cx="253" cy="261" r="3" fill="#111" />
+              {/* Title */}
+              <text x="200" y="112" fontSize="20" fontWeight="bold" fill="white" fontFamily="Arial" textAnchor="middle"
+                style={{ filter: 'drop-shadow(0 0 6px #cc44ff)' }}>
+                Axolotl Disco
+              </text>
+            </svg>
+            <div className="game-title">
+              Axolotl Disco
             </div>
           </button>
         </div>

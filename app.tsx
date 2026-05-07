@@ -8,8 +8,9 @@ import AxolotlDriver from "./src/axolotl_driving_game";
 import AxolotlClickerGame from "./src/axolotl_clicker_game";
 import AxolotlPainterGame from "./src/axolotl_painter_game";
 import AxolotlBaseballGame from "./src/axolotl_baseball_game";
+import AxolotlDiscoGame from "./src/axolotl_disco_game";
 
-type View = 'home' | 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr' | 'axolotl-painter' | 'axolotl-baseball';
+type View = 'home' | 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr' | 'axolotl-painter' | 'axolotl-baseball' | 'axolotl-disco';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -35,6 +36,8 @@ const App: React.FC = () => {
       return <AxolotlPainterGame onBack={navigateBack} />;
     case 'axolotl-baseball':
       return <AxolotlBaseballGame onBack={navigateBack} />;
+    case 'axolotl-disco':
+      return <AxolotlDiscoGame onBack={navigateBack} />;
     case 'home':
     default:
       return <Home onNavigate={navigateTo} />;
