@@ -2,7 +2,7 @@
 import React from "react";
 
 interface HomeProps {
-  onNavigate: (view: 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr' | 'axolotl-painter') => void;
+  onNavigate: (view: 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr' | 'axolotl-painter' | 'axolotl-baseball') => void;
 }
 
 const Home: React.FC<HomeProps> = ({ onNavigate }) => {
@@ -165,6 +165,69 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             />
             <div className="game-title">
               Axolotl Painter
+            </div>
+          </button>
+        </div>
+        <div className="game-link-wrapper">
+          <button
+            onClick={() => onNavigate('axolotl-baseball')}
+            className="game-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <svg
+              width="400"
+              height="300"
+              className="game-preview-img"
+              style={{ background: 'linear-gradient(to bottom, #87CEEB, #90EE90, #228B22)' }}
+            >
+              <defs>
+                <linearGradient id="baseballGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#FFB6C1" />
+                  <stop offset="50%" stopColor="#FF69B4" />
+                  <stop offset="100%" stopColor="#FF1493" />
+                </linearGradient>
+              </defs>
+              {/* Title */}
+              <text
+                x="200"
+                y="50"
+                fontSize="32"
+                fontWeight="bold"
+                fill="url(#baseballGradient)"
+                fontFamily="Arial, sans-serif"
+                textAnchor="middle"
+              >
+                ⚾ Axolotl Baseball
+              </text>
+              {/* Pitcher */}
+              <g transform="translate(80, 120)">
+                <ellipse cx="0" cy="0" rx="25" ry="18" fill="#FFB6C1" />
+                <circle cx="-8" cy="-5" r="3" fill="#000" />
+                <circle cx="8" cy="-5" r="3" fill="#000" />
+                <circle cx="-12" cy="5" r="3" fill="#FF69B4" />
+                <circle cx="-6" cy="5" r="3" fill="#FF69B4" />
+                <circle cx="0" cy="5" r="3" fill="#FF69B4" />
+              </g>
+              {/* Baseball */}
+              <circle cx="200" cy="150" r="12" fill="#FFFFFF" stroke="#C0C0C0" strokeWidth="1" />
+              <line x1="188" y1="150" x2="212" y2="150" stroke="#8B4513" strokeWidth="1" />
+              <line x1="200" y1="138" x2="200" y2="162" stroke="#8B4513" strokeWidth="1" />
+              {/* Batter */}
+              <g transform="translate(320, 200)">
+                <ellipse cx="0" cy="0" rx="25" ry="18" fill="#FFB6C1" />
+                <circle cx="-8" cy="-5" r="3" fill="#000" />
+                <circle cx="8" cy="-5" r="3" fill="#000" />
+                <circle cx="-12" cy="5" r="3" fill="#FF69B4" />
+                <circle cx="-6" cy="5" r="3" fill="#FF69B4" />
+                <circle cx="0" cy="5" r="3" fill="#FF69B4" />
+                <line x1="25" y1="-10" x2="40" y2="-20" stroke="#8B4513" strokeWidth="4" />
+              </g>
+              {/* Field lines */}
+              <line x1="200" y1="250" x2="50" y2="150" stroke="#FFFFFF" strokeWidth="2" />
+              <line x1="200" y1="250" x2="350" y2="150" stroke="#FFFFFF" strokeWidth="2" />
+            </svg>
+            <div className="game-title">
+              Axolotl Baseball
             </div>
           </button>
         </div>
