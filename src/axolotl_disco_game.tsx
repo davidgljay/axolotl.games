@@ -403,26 +403,8 @@ export default function AxolotlDiscoGame({ onBack }: DiscoGameProps) {
       </div>
 
       {/* Disco ball */}
-      <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-        <svg width="60" height="78" viewBox="0 0 70 90"
-          style={{ animation: 'disco-ball-spin 5s linear infinite', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }}>
-          <line x1="35" y1="0" x2="35" y2="12" stroke="#aaa" strokeWidth="2" />
-          <circle cx="35" cy="42" r="28" fill="#6b6b7a" />
-          {[0,1,2,3,4,5,6,7].map(col =>
-            [0,1,2,3,4,5].map(row => {
-              const colors = ['#ff4455','#ff8800','#ffee00','#44ff88','#44aaff','#cc44ff'];
-              const angle = (col / 8) * Math.PI * 2 + row * 0.2;
-              const r = 22 - Math.abs(row - 2.5) * 3;
-              const cx = 35 + Math.cos(angle) * r;
-              const cy = 22 + row * 10 + Math.sin(angle) * 4;
-              return (
-                <rect key={`${col}-${row}`} x={cx-3} y={cy-3} width={6} height={6} rx={1}
-                  fill={colors[(col+row) % colors.length]} opacity={0.85}
-                  transform={`rotate(${col*45},${cx},${cy})`} />
-              );
-            })
-          )}
-        </svg>
+      <div style={{ textAlign: 'center', marginBottom: '0.5rem', fontSize:'55px' }}>
+        🪩
       </div>
 
       {/* Tabs */}
