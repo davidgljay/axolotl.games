@@ -2,7 +2,7 @@
 import React from "react";
 
 interface HomeProps {
-  onNavigate: (view: 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr' | 'axolotl-painter' | 'axolotl-baseball' | 'axolotl-disco') => void;
+  onNavigate: (view: 'cake-run' | 'character-creator' | 'axolotl-driving-game' | 'axolotl-clickr' | 'axolotl-painter' | 'axolotl-baseball' | 'axolotl-disco' | 'axolotl-flips') => void;
 }
 
 const Home: React.FC<HomeProps> = ({ onNavigate }) => {
@@ -197,6 +197,22 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             />
             <div className="game-title">
               Axolotl Disco
+            </div>
+          </button>
+        </div>
+        <div className="game-link-wrapper">
+          <button
+            onClick={() => onNavigate('axolotl-flips')}
+            className="game-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <img
+              src="/img/axolotl_flips.jpg"
+              alt="Axolotl Flips"
+              className="game-preview-img"
+            />
+            <div className="game-title">
+              Axolotl Flips
             </div>
           </button>
         </div>
